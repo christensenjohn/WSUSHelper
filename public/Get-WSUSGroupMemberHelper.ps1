@@ -6,7 +6,7 @@
     Create a list of alle computers in all group or specific groups
 
     .PARAMETER Template
-    Parameter "Wsusgroups" can be set to one or many wsus group. Default is All groups.
+    Parameter "Groups" can be set to one or many wsus group. Default is All groups.
 
     .OUTPUTS
     Name      : MyComputer
@@ -14,14 +14,14 @@
 
 
     .EXAMPLE
-    Get-WSUSGroupMemberHelper -Wsusgroups 'Windows10','pc_Win7'
+    Get-WSUSGroupMemberHelper -Groups 'Windows10','pc_Win7'
 #>
 
 Function Get-WSUSGroupMemberHelper {
     [OutputType([System.Management.Automation.PSObject])]
     [CmdletBinding()]     
     Param(
-       [System.Collections.Specialized.StringCollection]$groups
+       [System.Collections.Specialized.StringCollection]$Groups
     )
 
     If (-not(Get-module UpdateServices )) {

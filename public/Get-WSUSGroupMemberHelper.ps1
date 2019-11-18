@@ -19,10 +19,9 @@
 
 Function Get-WSUSGroupMemberHelper {
     [OutputType([System.Management.Automation.PSObject])]
-    [CmdletBinding()]
+    [CmdletBinding()]     
     Param(
-        [Parameter(ValueFromPipeline = $true)]        
-        $Wsusgroups =  'ALL'
+       [System.Collections.Specialized.StringCollection]$groups
     )
 
     If (-not(Get-module UpdateServices )) {
@@ -31,16 +30,11 @@ Function Get-WSUSGroupMemberHelper {
         } 
      } 
 
-     
-    $CallerErrorActionPreference = $ErrorActionPreference
-    
     Try {
-        if ($Wsusgroups -eq 'ALL') {
+        if ($groups -eq $null) {
             $Computers = Get-WsusComputer 
         } else {         
-                foreach ($Group in $Wsusgroups) {
-                    $Computers += Get-WsusComputer -RequestedTargetGroupName $Group
-                }
+            $Computers += Get-WsusComputer -RequestedTargetGroupName $groups
         }
         $Computers | ForEach-Object {
             $PSObject = [PSCustomObject] @{
@@ -51,6 +45,6 @@ Function Get-WSUSGroupMemberHelper {
         } 
 
     } catch {
-        Write-Error -ErrorRecord $_ -ErrorAction $CallerErrorActionPreference
+        Write-Error -ErrorRecord $_ -ErrorAction stop
     }
 }

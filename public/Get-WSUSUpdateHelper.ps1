@@ -58,7 +58,10 @@ Function Get-WSUSUpdateHelper {
         } 
      } 
      
-    $CallerErrorActionPreference = $ErrorActionPreference
+   if (!$global:wsus) {
+    $global:wsus = [Microsoft.UpdateServices.Administration.AdminProxy]::GetUpdateServer();
+   }
+   $CallerErrorActionPreference = $ErrorActionPreference
 
    if (-not(Get-WsusComputer | Where-Object -FilterScript {$_.FullDomainName -eq $Computer})) {
         Write-Error "Computer:  $Computer  is not found in WSUS" -ErrorAction stop
@@ -67,14 +70,14 @@ Function Get-WSUSUpdateHelper {
         
     $UpdateScope = New-Object Microsoft.UpdateServices.Administration.UpdateScope
     if ($UpdateType -eq 'ALL') {
-        $updateClassifications = $wsus.GetUpdateClassifications() 
+        $updateClassifications = $global:wsus.GetUpdateClassifications() 
     } else {
-        $updateClassifications = $wsus.GetUpdateClassifications() | Where-Object {$_.title -match ( $UpdateType -join '|' )} 
+        $updateClassifications = $global:wsus.GetUpdateClassifications() | Where-Object {$_.title -match ( $UpdateType -join '|' )} 
     }
    
 
     Try {
-        $Client = $Wsus.GetComputerTargetByName($Computer)
+        $Client = $global:wsus.GetComputerTargetByName($Computer)
         $UpdateScope.Classifications.AddRange($updateClassifications)     
 
         if ($InstallationState -eq 'All') {

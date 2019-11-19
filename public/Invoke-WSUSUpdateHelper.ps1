@@ -31,21 +31,29 @@ Function Invoke-WSUSUpdateHelper {
 
     If (-not(Get-module UpdateServices )) {
        if (-not(Import-WSUSUpdateServicesModule)) {
-            Write-Error 'No Wsus module found'-ErrorAction stop
+            Write-Error  "Wsusgroup:  $Wsusgroup  is not found in WSUS"
+            return $false
        } 
     } 
     
-    $wsus = [Microsoft.UpdateServices.Administration.AdminProxy]::GetUpdateServer();
-    if (-not($group = $wsus.GetComputerTargetGroups() | Where-Object {$_.Name -eq $Wsusgroup})){
-        Write-Error  "Wsusgroup:  $Wsusgroup  is not found in WSUS" -ErrorAction Stop
+     if (!$global:wsus) {
+        $global:wsus = [Microsoft.UpdateServices.Administration.AdminProxy]::GetUpdateServer();
+    }
+
+    if (-not($group = $global:wsus.GetComputerTargetGroups() | Where-Object {$_.Name -eq $Wsusgroup})){
+        Write-Error  "Wsusgroup:  $Wsusgroup  is not found in WSUS"
+        return $false        
     }    
                
-    if (-not($Update = $wsus.SearchUpdates($UpdateTitle))) {
-        Write-Error "UpdateTitle:  $UpdateTitle  is not found in WSUS" -ErrorAction Stop
+    if (-not($Update = $global:wsus.SearchUpdates($UpdateTitle))) {
+        Write-Error "UpdateTitle:  $UpdateTitle  is not found in WSUS" 
+        return $false
     }    
     try {
         $update.Approve("Install",($group)) | Out-Null
     } catch {
-        Write-Error -ErrorRecord $_ -ErrorAction Stop
-    }      
+        Write-Error -ErrorRecord $_ 
+        return $false
+    }
+    return $true      
 } 
